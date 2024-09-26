@@ -9,10 +9,17 @@ import { nanoid } from "nanoid";
 // Then I create a state called currentNoteId. It is initalisng the ID of the first note or an empty string.
 // The first part is checking that the notes at the index of 0 exists before trying to access the ID property of that note.
 function App() {
-  const [notes, setNotes] = React.useState([]);
+  const [notes, setNotes] = React.useState(
+    () => JSON.parse(localStorage.getItem("notes")) || [] //getting the stored notes when the app renders. If there are no notes an emoty array is parsed instead.
+  );
   const [currentNoteId, setCurrentNoteId] = React.useState(
     (notes[0] && notes[0].id) || ""
   );
+
+  // saving notes to local storage
+  React.useEffect(() => {
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }, [notes]);
 
   // newNote is given an ID from the nanoid and default text in the body.
   // ...prevNotes is brining in all the existing notes if there are any.

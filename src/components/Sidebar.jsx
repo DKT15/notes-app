@@ -9,8 +9,9 @@ function Sidebar(props) {
           note.id === props.currentNote.id ? "selected-note" : ""
         }`} // If note.id is equal to the currentNote id, when one of the notes is selected it highlights it using the selected-note styling which is the className.
         onClick={() => props.setCurrentNoteId(note.id)} // when clicking inside of a div, the current note ID is set which is helping the user change the class/note in the application and also changing the text is displayed in each note.
+        // The h4 below returns the first line of the note. Accessing the the body of the first note in the array. It is the string to run the split method on. The divider used is the new line character \n.
       >
-        <h4 className="text-snippet">Note {index + 1}</h4>
+        <h4 className="text-snippet">{note.body.split("\n")[0]}</h4>
       </div>
     </div>
   ));
