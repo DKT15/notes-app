@@ -19,7 +19,7 @@ function Editor({ currentNote, updateNote }) {
   return (
     <section className="pane editor">
       <ReactMde
-        value={currentNote.body}
+        value={currentNote?.body} //optional chaining in case current note does not exist.
         onChange={updateNote}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}

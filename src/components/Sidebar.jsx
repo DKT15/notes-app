@@ -14,7 +14,7 @@ function Sidebar(props) {
         <h4 className="text-snippet">{note.body.split("\n")[0]}</h4>
         <button
           className="delete-btn"
-          onClick={(event) => props.deleteNote(event, note.id)} //passing the event in the callback function along to the deleteNote function and also I am passing the note.id.
+          onClick={() => props.deleteNote(note.id)} // passing the note.id.
         >
           <i className="gg-trash trash-icon"></i>
         </button>
