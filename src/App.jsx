@@ -34,14 +34,33 @@ function App() {
   }
 
   // This allows me to save in state any changes to the notes that have been created. I can type something in the editor and it will be saved locally in state at least for now.
+  // looping through the oldNotes. If the oldNotes ID matches the ID of the current note then the updated/current note is put to the beginning of the new array.
+  // If not the old note is pushed to the end of the new array.
   function updateNote(text) {
-    setNotes((oldNotes) =>
-      oldNotes.map((oldNote) => {
-        return oldNote.id === currentNoteId
-          ? { ...oldNote, body: text }
-          : oldNote;
-      })
-    );
+    setNotes((oldNotes) => {
+      const newArray = [];
+      for (let i = 0; i < oldNotes.length; i++) {
+        const oldNote = oldNotes[i]; //oldNote can be used instead of have to use oldNotes[i] everywhere.
+        if (oldNote.id === currentNoteId) {
+          newArray.unshift({ ...oldNote, body: text });
+        } else {
+          newArray.push(oldNote);
+        }
+        return newArray;
+      }
+    });
+  }
+
+  // This does not rearrange the notes
+  // setNotes(oldNotes => oldNotes.map(oldNote => {
+  //    return oldNote.id === currentNoteId
+  //       ? { ...oldNote, body: text }
+  //       : oldNote
+  // }))
+
+  function deleteNote(event, noteId) {
+    event.stopPropagation(); // when the trash icon handles the event, stop propogating the click event to the parent e.g. the sidebar div that is holding the entire note.
+    setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId)); //Only filtering the one item based on the noteId. Looking at each note in the array and if the id does not equal the one I am trying to delete, the statement will return true and delete. If false it will leave it.
   }
 
   // This is a helper function that is helping to determine what the currentNote is and it is being done in both the sidebar component and the editor component to pass the currentNote down as props to each component.
@@ -63,6 +82,7 @@ function App() {
             currentNote={findCurrentNote()}
             setCurrentNoteId={setCurrentNoteId}
             newNote={createNewNote}
+            deleteNote={deleteNote}
           />
           {currentNoteId && notes.length > 0 && (
             <Editor currentNote={findCurrentNote()} updateNote={updateNote} />

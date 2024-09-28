@@ -12,6 +12,12 @@ function Sidebar(props) {
         // The h4 below returns the first line of the note. Accessing the the body of the first note in the array. It is the string to run the split method on. The divider used is the new line character \n.
       >
         <h4 className="text-snippet">{note.body.split("\n")[0]}</h4>
+        <button
+          className="delete-btn"
+          onClick={(event) => props.deleteNote(event, note.id)} //passing the event in the callback function along to the deleteNote function and also I am passing the note.id.
+        >
+          <i className="gg-trash trash-icon"></i>
+        </button>
       </div>
     </div>
   ));
