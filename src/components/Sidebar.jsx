@@ -1,4 +1,5 @@
 import React from "react";
+import "../styles/App.css";
 
 // Taking the array of notes and mapping it into noteElements, which are then being displayed for the user. Refer to line 26.
 function Sidebar(props) {

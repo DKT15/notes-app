@@ -1,10 +1,9 @@
 import React from "react";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
-import { data } from "./data";
 import Split from "react-split";
 import { onSnapshot, addDoc, doc, deleteDoc, setDoc } from "firebase/firestore"; //listens for changes in the database and allows the code to act accordingly locally.
-import { notesCollection, db } from "./firebase";
+import { notesCollection, db } from "/firebase";
 
 // saving all notes in state, initalising and empty array.
 // Then I create a state called currentNoteId. It is initalisng the ID of the first note or an empty string.
@@ -12,10 +11,14 @@ import { notesCollection, db } from "./firebase";
 function App() {
   const [notes, setNotes] = React.useState([]);
   const [currentNoteId, setCurrentNoteId] = React.useState(""); // notes will never be initalised with a real array of note object. The previous check here is not necessary.
+  const [tempNoteText, setTempNoteText] = React.useState("");
 
   // This is a helper variable that is helping to determine what the currentNote is and it is being done in both the sidebar component and the editor component to pass the currentNote down as props to each component.
   const currentNote =
     notes.find((note) => note.id === currentNoteId) || notes[0];
+
+  // This new array is added to the sidebar below.
+  const sortedNotes = notes.sort((a, b) => b.updatedAt - a.updatedAt); // a represents one of the note objects and b represents the next note object. If the result is less than one it will be used to figure out what comes first.
 
   React.useEffect(() => {
     //Websocket connection (onSnapshot). React needs a way to unsubscribe from this listener if it is ever unmounted. If not there will be a memory leak.
@@ -42,10 +45,33 @@ function App() {
     }
   }, [notes]);
 
-  // newNote no longer needs to be given an ID from the nanoid as Firebase automatically provides one. Default text in the body.
+  // Checking if there is a current note. If there is the setTempNoteText is equal to the currentNote.body.
+  React.useEffect(() => {
+    if (currentNote) {
+      setTempNoteText(currentNote.body);
+    }
+  }, [currentNote]); //We want the useEffect to update tempNoteText anytime the currentNote changes.
+
+  // Creating a use effect that will run anytime tempNoteText changes(on every keystroke). The debouncing happens with the setTimeout function becasue the setTimeout function waiting 500ms before it updates the note in firestore.
+  // When the user types a character within 500 ms, tempNoteText will change and will make React run the function that cleans up the side effects (clearTimeout), and then the useEffect function will be ran again.
+  // Only when a full 500ms has passed will the setTimeout be allowed to run which is when the firestore will be updated.
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      //checking that the tempNoteText does not equal the currentNote.body. If they are not then update the note in firestore.
+      // Selecting the note will not trigger the update anymore as the currentNote.body is equal to the tempNoteText. It has been set in the above useEffect.
+      if (tempNoteText !== currentNote.body) {
+        updateNote(tempNoteText);
+      }
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [tempNoteText]);
+
+  // newNote no longer needs to be given an ID from the nanoid as Firebase automatically provides one. Default text in the body. In firebsae, will be able to see when the note was created and updated.
   async function createNewNote() {
     const newNote = {
       body: "# Type your markdown note's title here",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
     const newNoteRef = await addDoc(notesCollection, newNote); //addDoc returns a promise
     setCurrentNoteId(newNoteRef.id); // the reference is where I can acces the id property so I can set the current note ID.
@@ -57,7 +83,7 @@ function App() {
   // Thrid parameter allows the object to be merged to the existing object in FiresTore and stops everything being overwritten.
   async function updateNote(text) {
     const docRef = doc(db, "notes", currentNoteId);
-    await setDoc(docRef, { body: text }, { merge: true });
+    await setDoc(docRef, { body: text, updateAt: Date.now() }, { merge: true });
   }
 
   // This does not rearrange the notes
@@ -78,13 +104,16 @@ function App() {
       {notes.length > 0 ? (
         <Split sizes={[30, 70]} direction="horizontal" className="split">
           <Sidebar
-            notes={notes}
-            currentNote={currentNote()}
+            notes={sortedNotes}
+            currentNote={currentNote}
             setCurrentNoteId={setCurrentNoteId}
             newNote={createNewNote}
             deleteNote={deleteNote}
           />
-          <Editor currentNote={currentNote()} updateNote={updateNote} />
+          <Editor
+            tempNoteText={tempNoteText}
+            setTempNoteText={setTempNoteText}
+          />
         </Split>
       ) : (
         <div className="no-notes">

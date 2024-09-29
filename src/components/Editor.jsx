@@ -2,8 +2,9 @@ import React from "react";
 import Showdown from "showdown";
 import ReactMde from "react-mde";
 import "react-mde/lib/styles/css/react-mde-all.css";
+import "../styles/App.css";
 
-function Editor({ currentNote, updateNote }) {
+function Editor({ tempNoteText, setTempNoteText }) {
   const [selectedTab, setSelectedTab] = React.useState("write"); // It is maintaining its own state and controls the tabs. The default is set to write. It allows you to toggle between write and preview.
 
   // This is what converts markdown code to HTML code.
@@ -19,8 +20,8 @@ function Editor({ currentNote, updateNote }) {
   return (
     <section className="pane editor">
       <ReactMde
-        value={currentNote?.body} //optional chaining in case current note does not exist.
-        onChange={updateNote}
+        value={tempNoteText}
+        onChange={setTempNoteText}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
         generateMarkdownPreview={(markdown) =>
